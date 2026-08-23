@@ -37,14 +37,8 @@ body{
 }
 .logo__mark *{display:none}
 .logo__type{display:flex;flex-direction:column;line-height:1}
-.logo__name{
-  font-family:"Newsreader",Georgia,serif;font-weight:500;
-  font-size:1.125rem;letter-spacing:.01em;
-}
-.logo__sub{
-  font-family:"IBM Plex Mono",monospace;font-size:.5625rem;
-  letter-spacing:.18em;text-transform:uppercase;opacity:.7;margin-top:.35rem;
-}
+.logo__name{font-family:"Newsreader",Georgia,serif;font-weight:500;font-size:1.125rem;letter-spacing:.01em}
+.logo__sub{font-family:"IBM Plex Mono",monospace;font-size:.5625rem;letter-spacing:.18em;text-transform:uppercase;opacity:.7;margin-top:.35rem}
 .skip{position:absolute;left:-9999px;background:var(--ink);color:#fff;padding:.75rem 1rem;z-index:99}
 .skip:focus{left:.5rem;top:.5rem}
 
@@ -59,20 +53,13 @@ body{
 
 /* ---- hero band ---- */
 .hero{background:var(--ground);color:var(--on-dark);padding:4.5rem 0 4rem;position:relative;overflow:hidden}
-.hero::after{
-  content:"";position:absolute;right:-8rem;top:-6rem;width:34rem;height:34rem;
-  background:var(--ground-2);transform:rotate(24deg);pointer-events:none;
-}
+.hero::after{content:"";position:absolute;right:-8rem;top:-6rem;width:34rem;height:34rem;background:var(--ground-2);transform:rotate(24deg);pointer-events:none}
 .hero .wrap{position:relative;z-index:1}
 .hero__logo{margin-bottom:3rem}
 .hero__logo .logo__mark{width:72px;height:72px;background-color:var(--gold)}
 .hero__logo .logo__name{font-size:1.75rem;color:var(--gold)}
 .hero__logo .logo__sub{font-size:.625rem;margin-top:.5rem;color:var(--gold);opacity:.8}
-.hero h1{
-  font-family:"Newsreader",Georgia,serif;font-weight:500;
-  font-size:clamp(2.1rem,5.4vw,3.9rem);line-height:1.08;letter-spacing:-.018em;
-  margin:0 0 1.5rem;max-width:20ch;
-}
+.hero h1{font-family:"Newsreader",Georgia,serif;font-weight:500;font-size:clamp(2.1rem,5.4vw,3.9rem);line-height:1.08;letter-spacing:-.018em;margin:0 0 1.5rem;max-width:20ch}
 .hero h1 em{font-style:italic;color:var(--gold)}
 .hero__lede{max-width:var(--measure);font-size:1.125rem;color:var(--on-dark-soft);margin:0 0 3rem}
 .hero__facts{display:flex;flex-wrap:wrap;gap:.5rem 3rem;padding-top:1.4rem;border-top:1px solid rgba(201,169,97,.35)}
@@ -82,10 +69,7 @@ body{
 .section{padding:4.75rem 0;border-top:1px solid var(--line)}
 .section:first-of-type{border-top:0}
 .section__head{margin-bottom:2.75rem;max-width:var(--measure)}
-.section__head h2{
-  font-family:"Newsreader",Georgia,serif;font-weight:600;
-  font-size:clamp(1.6rem,3vw,2.1rem);letter-spacing:-.012em;margin:.8rem 0 0;
-}
+.section__head h2{font-family:"Newsreader",Georgia,serif;font-weight:600;font-size:clamp(1.6rem,3vw,2.1rem);letter-spacing:-.012em;margin:.8rem 0 0}
 .section__head p{margin:1rem 0 0;color:var(--ink-soft)}
 
 /* ---- divisions ---- */
@@ -95,18 +79,25 @@ body{
   display:flex;flex-direction:column;min-height:15rem;
   text-decoration:none;color:inherit;transition:background 180ms ease;
 }
-.parcel::before{
-  content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
-  background:var(--gold);transform:scaleY(0);transform-origin:top;
-  transition:transform 240ms cubic-bezier(.2,.7,.2,1);
-}
-.parcel:hover,.parcel:focus-visible{background:var(--tint);outline:none}
-.parcel:hover::before,.parcel:focus-visible::before{transform:scaleY(1)}
+.parcel::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--gold);transform:scaleY(0);transform-origin:top;transition:transform 240ms cubic-bezier(.2,.7,.2,1)}
+a.parcel:hover,a.parcel:focus-visible{background:var(--tint);outline:none}
+a.parcel:hover::before,a.parcel:focus-visible::before{transform:scaleY(1)}
 .parcel__label{color:var(--ground);margin-bottom:1.2rem}
 .parcel h3{font-family:"Newsreader",Georgia,serif;font-weight:600;font-size:1.3125rem;margin:0 0 .65rem;letter-spacing:-.008em}
 .parcel p{margin:0;color:var(--ink-soft);font-size:.9375rem;line-height:1.6}
-.parcel__foot{margin-top:auto;padding-top:1.5rem;display:flex;justify-content:space-between;align-items:baseline;gap:1rem}
-.parcel__go{font-family:"IBM Plex Mono",monospace;font-size:.6875rem;letter-spacing:.15em;text-transform:uppercase;font-weight:500;color:var(--ground)}
+.parcel__foot{margin-top:auto;padding-top:1.5rem;display:flex;justify-content:space-between;align-items:baseline;gap:1rem;flex-wrap:wrap}
+.parcel__go{font-family:"IBM Plex Mono",monospace;font-size:.6875rem;letter-spacing:.15em;text-transform:uppercase;font-weight:500;color:var(--ground);text-decoration:none;white-space:nowrap}
+a.parcel__go:hover{text-decoration:underline}
+
+/* tiers below the trading grid */
+.tier{margin-top:3.25rem}
+.tier__label{display:block;color:var(--gold);padding-bottom:.7rem;border-bottom:2px solid var(--gold);margin-bottom:0}
+.parcel--wide{border:1px solid var(--line);border-top:0;min-height:0}
+.parcel--wide p{max-width:52rem;font-size:1rem}
+.parcel--soon{background:var(--tint);border:1px dashed var(--line);border-top:0}
+.parcel--soon::before{display:none}
+.parcel--soon .parcel__label{color:var(--ink-soft)}
+.parcel--soon h3{color:var(--ink-soft)}
 
 /* ---- two-column ---- */
 .about,.contact{display:grid;grid-template-columns:1fr;gap:2.5rem}
@@ -123,21 +114,17 @@ address{font-style:normal;color:var(--ink-soft)}
 footer{background:var(--ground);color:var(--on-dark-soft);padding:2.25rem 0;border-top:3px solid var(--gold)}
 footer .wrap{display:flex;flex-wrap:wrap;gap:.6rem 2rem;justify-content:space-between}
 footer .mono{color:var(--on-dark-soft)}
+footer a{color:var(--gold);text-decoration:none}
+footer a:hover{text-decoration:underline}
 
 /* ---- article ---- */
 .article{padding:3.5rem 0 5rem}
 .article__head{max-width:44rem;margin-bottom:3rem;padding-bottom:1.4rem;border-bottom:2px solid var(--gold)}
-.article__head h1{
-  font-family:"Newsreader",Georgia,serif;font-weight:600;
-  font-size:clamp(1.9rem,4.2vw,2.9rem);line-height:1.12;letter-spacing:-.016em;margin:1rem 0 1.1rem;
-}
+.article__head h1{font-family:"Newsreader",Georgia,serif;font-weight:600;font-size:clamp(1.9rem,4.2vw,2.9rem);line-height:1.12;letter-spacing:-.016em;margin:1rem 0 1.1rem}
 .article__standfirst{font-size:1.1875rem;color:var(--ink-soft);margin:0}
 .article__meta{display:flex;flex-wrap:wrap;gap:.4rem 1.75rem;margin-top:1.75rem}
 .prose{max-width:40rem}
-.prose h2{
-  font-family:"Newsreader",Georgia,serif;font-weight:600;font-size:1.5rem;
-  letter-spacing:-.012em;margin:3rem 0 1rem;padding-top:1.6rem;border-top:1px solid var(--line);
-}
+.prose h2{font-family:"Newsreader",Georgia,serif;font-weight:600;font-size:1.5rem;letter-spacing:-.012em;margin:3rem 0 1rem;padding-top:1.6rem;border-top:1px solid var(--line)}
 .prose h3{font-family:"Newsreader",Georgia,serif;font-weight:600;font-size:1.1875rem;margin:2.1rem 0 .6rem}
 .prose p{margin:0 0 1.15rem}
 .prose ul,.prose ol{margin:0 0 1.35rem;padding-left:1.25rem}
