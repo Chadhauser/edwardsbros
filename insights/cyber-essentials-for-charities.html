@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cyber Essentials for charities: scope, trustees' devices and what catches people out</title>
-<meta name="description" content="A plain guide to Cyber Essentials for charities: what the five controls cover, how trustees' and volunteers' own devices affect the scope, the shared mailbox problem, MFA, and what it costs.">
+<meta name="description" content="A plain guide to Cyber Essentials for charities: what the five controls cover, how trustees' and volunteers' own devices affect the scope, the two automatic failures under the current question set, and what it costs.">
 <meta name="robots" content="index,follow,max-image-preview:large">
 <link rel="canonical" href="https://www.edwardsbros.co.uk/insights/cyber-essentials-for-charities.html">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="Edwards Bros (Spaldwick) Ltd">
 <meta property="og:title" content="Cyber Essentials for charities — scope, trustees' devices and what catches people out">
-<meta property="og:description" content="How trustees' and volunteers' own devices affect the scope, the shared mailbox problem, and why funders are starting to ask.">
+<meta property="og:description" content="How trustees' and volunteers' own devices affect the scope, the two automatic failures, and why funders are starting to ask.">
 <meta property="og:url" content="https://www.edwardsbros.co.uk/insights/cyber-essentials-for-charities.html">
 <meta property="og:locale" content="en_GB">
 <meta name="twitter:card" content="summary">
@@ -20,7 +20,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&amp;family=Public+Sans:wght@400;600&amp;display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/style.css">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Cyber Essentials for charities — scope, trustees' devices and what catches people out","description":"How trustees' and volunteers' own devices affect the scope, the shared mailbox problem, and why funders are starting to ask.","datePublished":"2026-08-22","dateModified":"2026-08-23","inLanguage":"en-GB","mainEntityOfPage":{"@type":"WebPage","@id":"https://www.edwardsbros.co.uk/insights/cyber-essentials-for-charities.html"},"author":{"@type":"Person","name":"Peter Edwards","jobTitle":"Director","hasCredential":"ACMA CGMA"},"publisher":{"@type":"Organization","name":"Edwards Bros (Spaldwick) Ltd","@id":"https://www.edwardsbros.co.uk/#org"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Cyber Essentials for charities — scope, trustees' devices and what catches people out","description":"How trustees' and volunteers' own devices affect the scope, the two automatic failures, and why funders are starting to ask.","datePublished":"2026-08-22","dateModified":"2026-08-23","inLanguage":"en-GB","mainEntityOfPage":{"@type":"WebPage","@id":"https://www.edwardsbros.co.uk/insights/cyber-essentials-for-charities.html"},"author":{"@type":"Person","name":"Peter Edwards","jobTitle":"Director","hasCredential":"ACMA CGMA"},"publisher":{"@type":"Organization","name":"Edwards Bros (Spaldwick) Ltd","@id":"https://www.edwardsbros.co.uk/#org"}}</script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -38,7 +38,7 @@
 <div class="article__head">
 <span class="mono crumb"><a href="/">Edwards Bros</a> / <a href="/insights/">Insights</a></span>
 <h1>Cyber Essentials for charities</h1>
-<p class="article__standfirst">What the certification covers, how trustees' and volunteers' own devices affect the scope, why funders are starting to ask for it — and where small charities get caught out.</p>
+<p class="article__standfirst">What the certification covers, how trustees' and volunteers' own devices affect the scope, why funders are starting to ask for it — and the two answers that now fail an application outright.</p>
 <div class="article__meta"><span class="mono">For charity trustees and treasurers</span><span class="mono">Peter Edwards ACMA CGMA</span><span class="mono">Reading time 6 minutes</span></div>
 </div>
 <div class="prose">
@@ -52,33 +52,42 @@
 <ul>
 <li><strong>Firewalls</strong> — every internet-connected device protected, including laptops used at home.</li>
 <li><strong>Secure configuration</strong> — default passwords changed, unused software and accounts removed, screens locked.</li>
-<li><strong>Security update management</strong> — operating systems and applications still supported by the vendor, and patched promptly.</li>
+<li><strong>Security update management</strong> — operating systems and applications still supported by the vendor, and patched within the required window.</li>
 <li><strong>User access control</strong> — individual accounts for individual people, admin rights separated from daily use, leavers removed.</li>
 <li><strong>Malware protection</strong> — anti-malware in place, or app-store-only installation on phones and tablets.</li>
 </ul>
+
+<h2>The two automatic failures</h2>
+
+<p>Before anything else, know these. Under the current question set two answers fail the entire assessment on their own, regardless of how well everything else is answered.</p>
+
+<h3>MFA on the cloud services</h3>
+<p>For a typical charity the in-scope cloud services are email, the accounts package, online banking, the fundraising platform, the website CMS and wherever the governing documents and minutes live. Multi-factor authentication is now mandatory on every one of them, for all users rather than just administrators. Where a service offers it and it is not switched on, the assessment fails — and it makes no difference whether MFA is free, bundled or only available as a paid option. For a charity this is also the control most directly aimed at the payment fraud that actually hits the sector, so it is worth doing regardless of certification.</p>
+
+<h3>Patching within fourteen days</h3>
+<p>Security updates rated critical or high risk must be installed within fourteen days of release — across operating systems, applications and network equipment including the router. This is the second outright failure, and it is the one most likely to catch a charity where a laptop belonging to a volunteer sits unopened for weeks at a time.</p>
 
 <h2>Where charities get caught out</h2>
 
 <h3>Everyone works on their own device</h3>
 <p>The typical small charity owns almost no equipment. The treasurer runs the accounts on a personal laptop, the secretary holds the mailing list on theirs, and trustees read charity email on personal phones. Every one of those devices that touches charity data is potentially in scope, and must meet the same standard as an office machine: supported operating system, separate user account, updates applied.</p>
-<p>The way through is a deliberate scoping decision, made before the questionnaire is answered. If access on personal devices can be confined — charity-provided equipment for the roles that handle data, or access restricted to web services with nothing stored locally — the scope shrinks from "every trustee's phone" to a manageable handful of devices. Getting this decision right at the start is the single biggest determinant of how hard certification is. The same question arises for councils, and is covered in <a href="/insights/cyber-essentials-parish-councils.html">our guide for parish councils</a>.</p>
+<p>The way through is a deliberate scoping decision, made before the questionnaire is answered. If access on personal devices can be confined — charity-provided equipment for the roles that handle data, or access restricted to web services with nothing stored locally — the scope shrinks from "every trustee's phone" to a manageable handful of devices. Getting this decision right at the start is the single biggest determinant of how hard certification is. Note too that cloud services are now formally defined and cannot be excluded from scope at all. The same question arises for councils, and is covered in <a href="/insights/cyber-essentials-parish-councils.html">our guide for parish councils</a>.</p>
 
 <h3>The shared mailbox with the shared password</h3>
 <p>One generic <em>info@</em> login used by the chair, the secretary and two volunteers — with a password unchanged since the account was created — is close to universal, and it fails the access control requirement. Shared mailboxes are fine; shared credentials are not. Each person needs their own login with access to the shared mailbox, with multi-factor authentication switched on.</p>
-
-<h3>MFA on the cloud services</h3>
-<p>For a typical charity the in-scope cloud services are email, the accounts package, online banking, the fundraising platform, the website CMS and wherever the governing documents and minutes live. Multi-factor authentication is expected on all of them. Where it is available and not enabled, that alone can fail the assessment — and for a charity, MFA on email and banking is also the control most directly aimed at the payment fraud that actually hits the sector.</p>
 
 <h3>Nobody knows who still has access</h3>
 <p>Charities are long-lived and their people turn over: trustees retire, treasurers hand on, volunteers drift away. The most time-consuming part of certification is usually the inventory — which devices, which services, which former treasurer still technically has the banking login. That document is worth building even if the charity never certifies.</p>
 
 <h2>Is it worth it without a funder demanding it?</h2>
 
-<p>Two honest arguments in favour. Charities hold exactly the data that makes breaches painful — donor details, beneficiary records that are often sensitive, gift aid declarations — and the five controls are aimed at the most common ways that data is actually lost. And certification requirements travel: it is far less pressured to certify on the charity's own timetable than in the weeks before a funding application deadline. The argument against is cost, which for a small charity is a real trustee decision — the assessment fee is modest and set by the certification body, and the remediation for most small charities is configuration time rather than new equipment. Trustees weighing it up can reasonably treat it as part of their duty to protect the charity's assets, of which its data and its bank balance are both examples.</p>
+<p>Two honest arguments in favour. Charities hold exactly the data that makes breaches painful — donor details, beneficiary records that are often sensitive, gift aid declarations — and the five controls are aimed at the most common ways that data is actually lost. And certification requirements travel: it is far less pressured to certify on the charity's own timetable than in the weeks before a funding application deadline. The argument against is cost, which for a small charity is a real trustee decision — the assessment fee is set by the certification body and scales with organisation size, and the remediation for most small charities is configuration time rather than new equipment. Trustees weighing it up can reasonably treat it as part of their duty to protect the charity's assets, of which its data and its bank balance are both examples.</p>
 
 <h2>Where to start</h2>
 
 <p>Before any questionnaire: list every device used for charity work including personal ones, every online service the charity uses, and every person with access to each. Then make the scoping decision about personal devices deliberately. Nine times out of ten, the inventory and the scoping call are the real work, and everything after them is straightforward.</p>
+
+<p>Scheme requirements are reviewed periodically and question sets change between years — confirm the requirements applying to your own assessment before you begin.</p>
 
 <div class="cta">
   <span class="mono">PassCyber · Edwards Bros</span>
