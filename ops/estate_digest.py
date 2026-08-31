@@ -14,6 +14,7 @@ import datetime as dt
 import json
 import os
 import sys
+import time
 import xml.etree.ElementTree as ET
 
 try:
@@ -67,7 +68,9 @@ AREAS = [
 ]
 
 OCDS_URL = "https://www.contractsfinder.service.gov.uk/Published/Notices/OCDS/Search"
-MAX_PAGES = 40
+MAX_PAGES = 25
+PAGE_PAUSE = 2.0          # be a good citizen; the service rate-limits hard
+BACKOFF = (10, 30, 60)    # seconds to wait after a 429 before retrying
 
 # ----------------------------------------------------------- (c) reminders
 
@@ -83,7 +86,41 @@ def _get(url, **kw):
     return requests.get(url, timeout=TIMEOUT, headers=HEADERS, **kw)
 
 
+def _get_polite(url, **kw):
+    """GET with backoff on 429/503. Returns the last response either way."""
+    r = _get(url, **kw)
+    for wait in BACKOFF:
+        if r.status_code not in (429, 503):
+            return r
+        time.sleep(wait)
+        r = _get(url, **kw)
+    return r
+
+
 # ------------------------------------------------------------------ section a
+
+def _sitemap_state(base):
+    """Return (state, url_count) for a site's sitemap."""
+    try:
+        r = _get(base.rstrip("/") + "/sitemap.xml", allow_redirects=True)
+    except Exception as e:
+        return "error (%s)" % type(e).__name__, "?"
+    if r.status_code >= 400:
+        return "MISSING (%s)" % r.status_code, "0"
+    body = (r.content or b"").lstrip()
+    ctype = (r.headers.get("Content-Type") or "").lower()
+    looks_xml = body.startswith(b"<?xml") or body.startswith(b"<urlset") or body.startswith(b"<sitemapindex")
+    if not looks_xml:
+        if b"<html" in body[:400].lower() or "html" in ctype:
+            return "BLOCKED/HTML (%s)" % r.status_code, "0"
+        return "NOT XML (%s)" % r.status_code, "0"
+    try:
+        root = ET.fromstring(r.content)
+    except ET.ParseError:
+        return "INVALID XML", "0"
+    locs = [e for e in root.iter() if e.tag.endswith("}loc") or e.tag == "loc"]
+    return ("ok" if locs else "EMPTY"), str(len(locs))
+
 
 def section_sites():
     lines = ["## Sites", ""]
@@ -91,8 +128,6 @@ def section_sites():
     lines.append("| --- | --- | --- | --- | --- |")
     for base in SITES:
         host = base.replace("https://", "")
-        status, ms = "?", "?"
-        sm, count = "?", "?"
         try:
             r = _get(base, allow_redirects=True)
             status = str(r.status_code)
@@ -100,23 +135,8 @@ def section_sites():
             if r.status_code >= 400:
                 status = "DOWN " + status
         except Exception as e:
-            status = "DOWN"
-            ms = type(e).__name__
-        try:
-            r = _get(base.rstrip("/") + "/sitemap.xml", allow_redirects=True)
-            if r.status_code >= 400:
-                sm, count = "MISSING (%s)" % r.status_code, "0"
-            else:
-                root = ET.fromstring(r.content)
-                locs = [e for e in root.iter() if e.tag.endswith("}loc") or e.tag == "loc"]
-                sm = "ok"
-                count = str(len(locs))
-                if len(locs) == 0:
-                    sm = "EMPTY"
-        except ET.ParseError:
-            sm, count = "INVALID XML", "0"
-        except Exception as e:
-            sm, count = "error (%s)" % type(e).__name__, "?"
+            status, ms = "DOWN", type(e).__name__
+        sm, count = _sitemap_state(base)
         lines.append("| %s | %s | %s | %s | %s |" % (host, status, ms, sm, count))
     lines.append("")
     return lines
@@ -143,9 +163,9 @@ def _text_of(rel):
         buyer.get("name") or "",
     ]
     for item in tender.get("items", []) or []:
-        addrs = item.get("deliveryAddresses") or []
+        addrs = list(item.get("deliveryAddresses") or [])
         if isinstance(item.get("deliveryAddress"), dict):
-            addrs = addrs + [item["deliveryAddress"]]
+            addrs.append(item["deliveryAddress"])
         for addr in addrs:
             if isinstance(addr, dict):
                 parts += [addr.get("region") or "", addr.get("locality") or "",
@@ -183,28 +203,36 @@ def section_tenders():
     releases = []
     warn = None
     truncated = False
+    pages_done = 0
     try:
-        page = 1
-        while page <= MAX_PAGES:
+        for page in range(1, MAX_PAGES + 1):
             params = {
                 "publishedFrom": frm.isoformat() + "T00:00:00",
                 "publishedTo": today.isoformat() + "T23:59:59",
                 "size": 100,
                 "page": page,
             }
-            r = _get(OCDS_URL, params=params)
+            r = _get_polite(OCDS_URL, params=params)
             if r.status_code >= 400:
-                warn = "Contracts Finder returned HTTP %s" % r.status_code
+                if releases:
+                    truncated = True
+                    warn = None
+                else:
+                    warn = "Contracts Finder returned HTTP %s" % r.status_code
                 break
             batch = _releases(r.json())
             releases += batch
+            pages_done = page
             if len(batch) < 100:
                 break
-            page += 1
+            if page == MAX_PAGES:
+                truncated = True
+            time.sleep(PAGE_PAUSE)
+    except Exception as e:
+        if not releases:
+            warn = "Contracts Finder fetch failed (%s: %s)" % (type(e).__name__, e)
         else:
             truncated = True
-    except Exception as e:
-        warn = "Contracts Finder fetch failed (%s: %s)" % (type(e).__name__, e)
 
     if warn:
         lines.append("> WARNING: %s -- section skipped this week, rest of digest unaffected." % warn)
@@ -242,11 +270,11 @@ def section_tenders():
             "url": url,
         })
 
-    lines.append("Scanned %d notices published %s to %s (%d live opportunities)."
-                 % (len(releases), frm, today, len(live)))
+    lines.append("Scanned %d notices over %d page(s), published %s to %s (%d live opportunities)."
+                 % (len(releases), pages_done, frm, today, len(live)))
     if truncated:
         lines.append("")
-        lines.append("> Note: hit the %d-page fetch cap; oldest notices in the window may be missed." % MAX_PAGES)
+        lines.append("> Note: fetch stopped early (page cap or rate limit); some notices in the window may be missed.")
     lines.append("")
     if not hits:
         lines.append("No matches in area this week.")
