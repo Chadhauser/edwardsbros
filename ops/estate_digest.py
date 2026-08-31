@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Estate Monday Digest (S1).
+"""Estate Monday Digest (S1 + S4).
 
 Deterministic core: free public endpoints only. No AI, no paid APIs, no local
 dependencies -- runs entirely on GitHub Actions.
@@ -328,6 +328,14 @@ def section_reminders():
     return lines
 
 
+# ------------------------------------------------------------- section d (S4)
+
+def section_registrar():
+    """Obligations lookahead. Lives in ops/registrar.py."""
+    from registrar import section_registrar as _reg
+    return _reg()
+
+
 # ---------------------------------------------------------------------- main
 
 def post_issue(title, body):
@@ -357,10 +365,11 @@ def post_issue(title, body):
 
 
 def main():
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     today = dt.date.today()
     body = ["_Generated %s UTC by the Estate Monday Digest action._"
             % dt.datetime.utcnow().strftime("%Y-%m-%d %H:%M"), ""]
-    for fn in (section_sites, section_tenders, section_reminders):
+    for fn in (section_registrar, section_sites, section_tenders, section_reminders):
         try:
             body += fn()
         except Exception as e:
