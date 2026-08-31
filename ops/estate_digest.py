@@ -68,7 +68,7 @@ AREAS = [
 ]
 
 OCDS_URL = "https://www.contractsfinder.service.gov.uk/Published/Notices/OCDS/Search"
-MAX_PAGES = 60            # a national week runs to several thousand notices
+MAX_PAGES = 20            # stages=tender filters server-side, so this is ample
 PAGE_PAUSE = 1.5          # be a good citizen; the service rate-limits hard
 BACKOFF = (10, 30, 60)    # seconds to wait after a 429 before retrying
 
@@ -220,6 +220,7 @@ def section_tenders():
             params = {
                 "publishedFrom": frm.isoformat() + "T00:00:00",
                 "publishedTo": today.isoformat() + "T23:59:59",
+                "stages": "tender",
                 "size": 100,
                 "page": page,
             }
@@ -281,7 +282,7 @@ def section_tenders():
         else:
             out_of_area.append(row)
 
-    lines.append("Scanned %d notices over %d page(s), published %s to %s (%d live opportunities)."
+    lines.append("Scanned %d tender-stage notices over %d page(s), published %s to %s (%d still open)."
                  % (len(releases), pages_done, frm, today, len(live)))
     if truncated:
         lines.append("")
