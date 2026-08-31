@@ -4,6 +4,10 @@ on:
   schedule:
     - cron: '0 7 1 * *'
   workflow_dispatch:
+  push:
+    paths:
+      - 'ops/owner_radar.py'
+      - '.github/workflows/owner-radar.yml'
 
 permissions:
   issues: write
