@@ -68,8 +68,8 @@ AREAS = [
 ]
 
 OCDS_URL = "https://www.contractsfinder.service.gov.uk/Published/Notices/OCDS/Search"
-MAX_PAGES = 25
-PAGE_PAUSE = 2.0          # be a good citizen; the service rate-limits hard
+MAX_PAGES = 60            # a national week runs to several thousand notices
+PAGE_PAUSE = 1.5          # be a good citizen; the service rate-limits hard
 BACKOFF = (10, 30, 60)    # seconds to wait after a 429 before retrying
 
 # ----------------------------------------------------------- (c) reminders
@@ -97,16 +97,29 @@ def _get_polite(url, **kw):
     return r
 
 
+def _get_retry(url, attempts=3, pause=4, **kw):
+    """GET with a couple of retries -- avoids false DOWN calls on cold starts."""
+    last = None
+    for i in range(attempts):
+        try:
+            r = _get(url, **kw)
+            if r.status_code < 400:
+                return r, None
+            last = "HTTP %s" % r.status_code
+        except Exception as e:
+            last = type(e).__name__
+        if i < attempts - 1:
+            time.sleep(pause)
+    return None, last
+
+
 # ------------------------------------------------------------------ section a
 
 def _sitemap_state(base):
     """Return (state, url_count) for a site's sitemap."""
-    try:
-        r = _get(base.rstrip("/") + "/sitemap.xml", allow_redirects=True)
-    except Exception as e:
-        return "error (%s)" % type(e).__name__, "?"
-    if r.status_code >= 400:
-        return "MISSING (%s)" % r.status_code, "0"
+    r, err = _get_retry(base.rstrip("/") + "/sitemap.xml", allow_redirects=True)
+    if r is None:
+        return "unreachable (%s)" % err, "?"
     body = (r.content or b"").lstrip()
     ctype = (r.headers.get("Content-Type") or "").lower()
     looks_xml = body.startswith(b"<?xml") or body.startswith(b"<urlset") or body.startswith(b"<sitemapindex")
@@ -128,14 +141,12 @@ def section_sites():
     lines.append("| --- | --- | --- | --- | --- |")
     for base in SITES:
         host = base.replace("https://", "")
-        try:
-            r = _get(base, allow_redirects=True)
+        r, err = _get_retry(base, allow_redirects=True)
+        if r is None:
+            status, ms = "**DOWN**", err
+        else:
             status = str(r.status_code)
             ms = str(int(r.elapsed.total_seconds() * 1000))
-            if r.status_code >= 400:
-                status = "DOWN " + status
-        except Exception as e:
-            status, ms = "DOWN", type(e).__name__
         sm, count = _sitemap_state(base)
         lines.append("| %s | %s | %s | %s | %s |" % (host, status, ms, sm, count))
     lines.append("")
@@ -216,7 +227,6 @@ def section_tenders():
             if r.status_code >= 400:
                 if releases:
                     truncated = True
-                    warn = None
                 else:
                     warn = "Contracts Finder returned HTTP %s" % r.status_code
                 break
@@ -240,15 +250,12 @@ def section_tenders():
         return lines
 
     live = [r for r in releases if _is_live_opportunity(r, today)]
-    hits, out_of_area = [], 0
+    hits, out_of_area = [], []
     seen = set()
     for rel in live:
         blob = _text_of(rel)
         kw = [k for k in KEYWORDS if k in blob]
         if not kw:
-            continue
-        if not any(a in blob for a in AREAS):
-            out_of_area += 1
             continue
         ocid = rel.get("ocid") or ""
         if ocid and ocid in seen:
@@ -261,14 +268,18 @@ def section_tenders():
             if "contractsfinder" in (doc.get("url") or ""):
                 url = doc["url"]
                 break
-        hits.append({
+        row = {
             "title": tender.get("title") or "(untitled)",
             "buyer": (rel.get("buyer") or {}).get("name") or "",
             "value": ("GBP {:,.0f}".format(value)) if isinstance(value, (int, float)) and value else "n/a",
             "closes": ((tender.get("tenderPeriod") or {}).get("endDate") or "")[:10],
             "kw": ", ".join(kw),
             "url": url,
-        })
+        }
+        if any(a in blob for a in AREAS):
+            hits.append(row)
+        else:
+            out_of_area.append(row)
 
     lines.append("Scanned %d notices over %d page(s), published %s to %s (%d live opportunities)."
                  % (len(releases), pages_done, frm, today, len(live)))
@@ -286,7 +297,13 @@ def section_tenders():
                 lines.append("  %s" % h["url"])
     if out_of_area:
         lines.append("")
-        lines.append("_%d keyword matches outside the target counties, suppressed._" % out_of_area)
+        lines.append("<details><summary>%d keyword matches outside the target counties</summary>" % len(out_of_area))
+        lines.append("")
+        for h in out_of_area[:25]:
+            lines.append("- %s -- %s (closes %s, matched: %s)"
+                         % (h["title"], h["buyer"], h["closes"] or "n/a", h["kw"]))
+        lines.append("")
+        lines.append("</details>")
     lines.append("")
     return lines
 
