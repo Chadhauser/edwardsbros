@@ -52,7 +52,7 @@ KEYWORDS = [
     "iasme",
 ]
 
-# Area terms -- counties plus their main towns.
+# Area terms -- target counties plus their main towns.
 AREAS = [
     "cambridgeshire", "cambridge", "huntingdon", "st neots", "st ives",
     "ely", "march", "wisbech", "sawtry", "ramsey",
@@ -67,6 +67,7 @@ AREAS = [
 ]
 
 OCDS_URL = "https://www.contractsfinder.service.gov.uk/Published/Notices/OCDS/Search"
+MAX_PAGES = 40
 
 # ----------------------------------------------------------- (c) reminders
 
@@ -104,14 +105,14 @@ def section_sites():
         try:
             r = _get(base.rstrip("/") + "/sitemap.xml", allow_redirects=True)
             if r.status_code >= 400:
-                sm, count = "missing (%s)" % r.status_code, "0"
+                sm, count = "MISSING (%s)" % r.status_code, "0"
             else:
                 root = ET.fromstring(r.content)
                 locs = [e for e in root.iter() if e.tag.endswith("}loc") or e.tag == "loc"]
                 sm = "ok"
                 count = str(len(locs))
                 if len(locs) == 0:
-                    sm = "empty"
+                    sm = "EMPTY"
         except ET.ParseError:
             sm, count = "INVALID XML", "0"
         except Exception as e:
@@ -124,10 +125,12 @@ def section_sites():
 # ------------------------------------------------------------------ section b
 
 def _releases(payload):
-    out = []
-    for result in (payload or {}).get("results", []) or []:
-        for rel in result.get("releases", []) or []:
-            out.append(rel)
+    """Contracts Finder returns releases at the top level; tolerate both shapes."""
+    if not isinstance(payload, dict):
+        return []
+    out = list(payload.get("releases") or [])
+    for result in payload.get("results", []) or []:
+        out += list(result.get("releases") or [])
     return out
 
 
@@ -140,13 +143,37 @@ def _text_of(rel):
         buyer.get("name") or "",
     ]
     for item in tender.get("items", []) or []:
-        addr = (item.get("deliveryAddress") or {})
-        parts += [addr.get("region") or "", addr.get("locality") or "",
-                  addr.get("postalCode") or ""]
+        addrs = item.get("deliveryAddresses") or []
+        if isinstance(item.get("deliveryAddress"), dict):
+            addrs = addrs + [item["deliveryAddress"]]
+        for addr in addrs:
+            if isinstance(addr, dict):
+                parts += [addr.get("region") or "", addr.get("locality") or "",
+                          addr.get("postalCode") or "", addr.get("streetAddress") or ""]
     for party in rel.get("parties", []) or []:
-        addr = (party.get("address") or {})
-        parts += [addr.get("region") or "", addr.get("locality") or ""]
+        addr = party.get("address") or {}
+        if ("buyer" in (party.get("roles") or [])) or not party.get("roles"):
+            parts += [party.get("name") or "", addr.get("region") or "",
+                      addr.get("locality") or "", addr.get("streetAddress") or ""]
     return " ".join(parts).lower()
+
+
+def _is_live_opportunity(rel, today):
+    """Keep open invitations to tender; drop awards and closed notices."""
+    tags = [t.lower() for t in (rel.get("tag") or [])]
+    if not any(t.startswith("tender") for t in tags):
+        return False
+    tender = rel.get("tender") or {}
+    if (tender.get("status") or "").lower() not in ("", "active", "planning"):
+        return False
+    end = ((tender.get("tenderPeriod") or {}).get("endDate") or "")[:10]
+    if end:
+        try:
+            if dt.date.fromisoformat(end) < today:
+                return False
+        except Exception:
+            pass
+    return True
 
 
 def section_tenders():
@@ -155,9 +182,10 @@ def section_tenders():
     frm = today - dt.timedelta(days=7)
     releases = []
     warn = None
+    truncated = False
     try:
         page = 1
-        while page <= 5:
+        while page <= MAX_PAGES:
             params = {
                 "publishedFrom": frm.isoformat() + "T00:00:00",
                 "publishedTo": today.isoformat() + "T23:59:59",
@@ -168,12 +196,13 @@ def section_tenders():
             if r.status_code >= 400:
                 warn = "Contracts Finder returned HTTP %s" % r.status_code
                 break
-            payload = r.json()
-            batch = _releases(payload)
+            batch = _releases(r.json())
             releases += batch
             if len(batch) < 100:
                 break
             page += 1
+        else:
+            truncated = True
     except Exception as e:
         warn = "Contracts Finder fetch failed (%s: %s)" % (type(e).__name__, e)
 
@@ -182,8 +211,10 @@ def section_tenders():
         lines.append("")
         return lines
 
+    live = [r for r in releases if _is_live_opportunity(r, today)]
     hits, out_of_area = [], 0
-    for rel in releases:
+    seen = set()
+    for rel in live:
         blob = _text_of(rel)
         kw = [k for k in KEYWORDS if k in blob]
         if not kw:
@@ -191,19 +222,31 @@ def section_tenders():
         if not any(a in blob for a in AREAS):
             out_of_area += 1
             continue
+        ocid = rel.get("ocid") or ""
+        if ocid and ocid in seen:
+            continue
+        seen.add(ocid)
         tender = rel.get("tender") or {}
         value = (tender.get("value") or {}).get("amount")
-        closes = (tender.get("tenderPeriod") or {}).get("endDate") or ""
+        url = ""
+        for doc in tender.get("documents", []) or []:
+            if "contractsfinder" in (doc.get("url") or ""):
+                url = doc["url"]
+                break
         hits.append({
             "title": tender.get("title") or "(untitled)",
             "buyer": (rel.get("buyer") or {}).get("name") or "",
-            "value": ("GBP %s" % f"{int(value):,}") if isinstance(value, (int, float)) else "n/a",
-            "closes": closes[:10],
+            "value": ("GBP {:,.0f}".format(value)) if isinstance(value, (int, float)) and value else "n/a",
+            "closes": ((tender.get("tenderPeriod") or {}).get("endDate") or "")[:10],
             "kw": ", ".join(kw),
-            "ocid": rel.get("ocid") or "",
+            "url": url,
         })
 
-    lines.append("Scanned %d notices published %s to %s." % (len(releases), frm, today))
+    lines.append("Scanned %d notices published %s to %s (%d live opportunities)."
+                 % (len(releases), frm, today, len(live)))
+    if truncated:
+        lines.append("")
+        lines.append("> Note: hit the %d-page fetch cap; oldest notices in the window may be missed." % MAX_PAGES)
     lines.append("")
     if not hits:
         lines.append("No matches in area this week.")
@@ -211,8 +254,8 @@ def section_tenders():
         for h in hits:
             lines.append("- **%s** -- %s" % (h["title"], h["buyer"]))
             lines.append("  value %s | closes %s | matched: %s" % (h["value"], h["closes"] or "n/a", h["kw"]))
-            if h["ocid"]:
-                lines.append("  https://www.contractsfinder.service.gov.uk/Search/Results?keyword=%s" % h["ocid"])
+            if h["url"]:
+                lines.append("  %s" % h["url"])
     if out_of_area:
         lines.append("")
         lines.append("_%d keyword matches outside the target counties, suppressed._" % out_of_area)
@@ -270,7 +313,8 @@ def post_issue(title, body):
 
 def main():
     today = dt.date.today()
-    body = ["_Generated %s UTC by the Estate Monday Digest action._" % dt.datetime.utcnow().strftime("%Y-%m-%d %H:%M"), ""]
+    body = ["_Generated %s UTC by the Estate Monday Digest action._"
+            % dt.datetime.utcnow().strftime("%Y-%m-%d %H:%M"), ""]
     for fn in (section_sites, section_tenders, section_reminders):
         try:
             body += fn()
