@@ -13,6 +13,10 @@ permissions:
   issues: write
   contents: read
 
+concurrency:
+  group: estate-digest
+  cancel-in-progress: true
+
 jobs:
   digest:
     runs-on: ubuntu-latest
