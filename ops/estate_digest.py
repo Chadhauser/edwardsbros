@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Estate Monday Digest (S1 + S4).
+"""Estate Monday Digest (S1 + S2 + S4 + Build Board).
 
 Deterministic core: free public endpoints only. No AI, no paid APIs, no local
 dependencies -- runs entirely on GitHub Actions.
@@ -41,16 +41,35 @@ SITES = [
 
 # -------------------------------------------------------------- (b) tenders
 
-# Keyword groups -- an item must match at least one of these.
+# S2: keywords tuned to what Peter would actually bid on. An item must match
+# at least one of these AND one area term below.
 KEYWORDS = [
+    # parish / town council internal audit -- Glebe Assurance
     "internal audit",
+    "internal auditor",
     "parish council",
     "town council",
     "annual governance",
-    "grounds maintenance",
-    "grass cutting",
+    "agar",
+    # charity independent examination -- Glebe Assurance
+    "independent examination",
+    "independent examiner",
+    "charity accounts",
+    # accountancy and finance support -- IPP
+    "bookkeeping",
+    "accountancy services",
+    "accounting services",
+    "management accounts",
+    "payroll services",
+    "finance support",
+    "financial services",
+    # cyber -- PassCyber
     "cyber essentials",
     "iasme",
+    "cyber security assessment",
+    # grounds -- Edwards Bros
+    "grounds maintenance",
+    "grass cutting",
 ]
 
 # Area terms -- target counties plus their main towns.
@@ -337,6 +356,12 @@ def section_registrar():
     return _reg()
 
 
+def section_build_board():
+    """Programme status. Lives in ops/build_board.py."""
+    from build_board import section_build_board as _bb
+    return _bb()
+
+
 # ---------------------------------------------------------------------- main
 
 def post_issue(title, body):
@@ -370,7 +395,8 @@ def main():
     today = dt.date.today()
     body = ["_Generated %s UTC by the Estate Monday Digest action._"
             % dt.datetime.utcnow().strftime("%Y-%m-%d %H:%M"), ""]
-    for fn in (section_registrar, section_sites, section_tenders, section_reminders):
+    for fn in (section_registrar, section_sites, section_tenders,
+               section_reminders, section_build_board):
         try:
             body += fn()
         except Exception as e:
