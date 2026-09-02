@@ -6,7 +6,8 @@ Four sources, all free:
   2. Recurring rules -- annual renewals and VAT quarters, computed forward
      from today so they never go stale.
   3. One-off fixed dates.
-  4. RDAP domain expiry lookups (best effort -- some registries do not publish).
+  4. RDAP domain expiry lookups, retried; a miss means the lookup failed or
+     the registry does not publish -- the two are not distinguished.
 
 Never crashes: every lookup is guarded and failures become warning lines.
 """
@@ -164,28 +165,39 @@ def companies_house_items():
 
 # -------------------------------------------------------------------- domains
 
+def _rdap_expiry(domain, attempts=3):
+    """Return (expiry_date, note). note is None on success."""
+    last = None
+    for i in range(attempts):
+        try:
+            r = requests.get(RDAP_BASE + domain, timeout=TIMEOUT, headers=HEADERS,
+                             allow_redirects=True)
+            if r.status_code == 404:
+                return None, "no RDAP record"
+            if r.status_code >= 400:
+                last = "HTTP %s" % r.status_code
+            else:
+                for ev in (r.json().get("events") or []):
+                    if (ev.get("eventAction") or "").lower() == "expiration":
+                        return _parse(ev.get("eventDate")), None
+                return None, "registry publishes no expiry date"
+        except Exception as e:
+            last = type(e).__name__
+        if i < attempts - 1:
+            time.sleep(3)
+    return None, "lookup failed (%s)" % last
+
+
 def domain_items():
     items, warns, unknown = [], [], []
     if requests is None:
         return items, ["Domains: requests unavailable."], unknown
     for domain in DOMAINS:
-        try:
-            r = requests.get(RDAP_BASE + domain, timeout=TIMEOUT, headers=HEADERS,
-                             allow_redirects=True)
-            if r.status_code >= 400:
-                unknown.append(domain)
-                continue
-            expiry = None
-            for ev in (r.json().get("events") or []):
-                if (ev.get("eventAction") or "").lower() == "expiration":
-                    expiry = _parse(ev.get("eventDate"))
-                    break
-            if expiry:
-                items.append((expiry, "Domain expiry -- %s" % domain))
-            else:
-                unknown.append(domain)
-        except Exception:
-            unknown.append(domain)
+        expiry, note = _rdap_expiry(domain)
+        if expiry:
+            items.append((expiry, "Domain expiry -- %s" % domain))
+        else:
+            unknown.append("%s (%s)" % (domain, note))
         time.sleep(0.5)
     return items, warns, unknown
 
@@ -253,8 +265,7 @@ def section_registrar():
         lines.append("")
 
     if dom_unknown:
-        lines.append("_Domain expiry not published by the registry for: %s._"
-                     % ", ".join(dom_unknown))
+        lines.append("_No expiry date for: %s._" % "; ".join(dom_unknown))
         lines.append("")
 
     for w in warns:
