@@ -1,0 +1,29 @@
+name: IndexNow ping
+on:
+  push:
+    branches: [main]
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Submit URLs to IndexNow
+        run: |
+          python3 - << 'EOF'
+          import json, re, urllib.request
+          HOST = "edwardsbros.co.uk"
+          KEY = "25799e6ca1949608bc5ba8492f3b214c"
+          try:
+              urls = re.findall(r"<loc>(.*?)</loc>", open("sitemap.xml").read())
+          except Exception:
+              urls = [f"https://{HOST}/"]
+          body = json.dumps({"host": HOST, "key": KEY,
+                             "keyLocation": f"https://{HOST}/{KEY}.txt",
+                             "urlList": urls[:100]}).encode()
+          req = urllib.request.Request("https://api.indexnow.org/indexnow", data=body,
+                headers={"Content-Type": "application/json; charset=utf-8"})
+          try:
+              print("IndexNow:", urllib.request.urlopen(req, timeout=30).status, len(urls), "urls")
+          except Exception as e:
+              print("IndexNow ping failed (non-fatal):", e)
+          EOF

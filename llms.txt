@@ -1,49 +1,12 @@
 # Edwards Bros (Spaldwick) Ltd
+> A long-established family company (England & Wales, no. 00598511) based in Cambridgeshire. Today it operates a group of commercial brands: Granton Finance (commercial finance broking, FIBA member FIB42279), PassCyber (Cyber Essentials certification support), CalWeave (Google Workspace add-on), publishing, and land interests.
 
-> A Huntingdonshire family company founded in 1955, now running trading businesses in commercial finance, Cyber Essentials certification and publishing, alongside data services taken on directly. Company number 00598511. Registered office: Fenland House, 15b Hostmoor Avenue, March, Cambridgeshire PE15 0AX. ICO registration ZA900683.
+## Our brands
+- [Granton Finance](https://granton.finance): commercial finance arranged by a chartered accountant — MBOs, acquisitions, bridging, invoice finance
+- [PassCyber](https://passcyber.co.uk): fixed-price Cyber Essentials certification support
+- [CalWeave](https://calweave.app): Google Calendar ↔ Sheets sync add-on
+- [Insights](https://edwardsbros.co.uk/insights): guides on business finance, compliance and succession
 
-Work is led by Peter Edwards ACMA CGMA, a chartered management accountant with over twenty years in senior finance roles.
-
-Note on entities: regulated accountancy work — preparing a smaller authority's Annual Governance and Accountability Return (AGAR), and charity independent examination — is not carried out by Edwards Bros. That work is provided by Glebe Assurance, a trading name of Insight Professional Partners Ltd, through which Peter Edwards works as a CIMA Member in Practice. Glebe Assurance cannot both prepare an authority's return and act as its internal auditor.
-
-## Services
-
-- [Data clean-up and analysis](https://www.edwardsbros.co.uk/data.html): Consolidating spreadsheets, system exports and PDFs into one clean dataset with committee-ready reporting. For parish and town councils, charities and CIOs, village halls, sports clubs, PCCs, internal drainage boards and residents' management companies — organisations with statutory or funder reporting obligations and no finance department.
-
-## Guides for parish and town councils
-
-- [Setting the precept: a clerk's walkthrough](https://www.edwardsbros.co.uk/insights/setting-the-precept-parish-council.html): The budget, the tax base, the Band D figure, and the January deadline.
-- [AGAR variance explanations that don't come back as a query](https://www.edwardsbros.co.uk/insights/agar-variance-explanations.html): Worked examples box by box of Section 2 variance explanations, and the three wordings the external auditor queries every year.
-- [When the external auditor's query lands](https://www.edwardsbros.co.uk/insights/pkf-littlejohn-query-response.html): The cause-amount-evidence structure that closes a PKF Littlejohn query in one round.
-- [The parish council fixed asset register](https://www.edwardsbros.co.uk/insights/parish-council-fixed-asset-register-template.html): The columns a register needs, the historic cost rule, and how to rebuild one that no longer agrees to Box 9.
-- [Cyber Essentials for parish councils](https://www.edwardsbros.co.uk/insights/cyber-essentials-parish-councils.html): Why the clerk's home laptop is in scope, councillors' own devices, and the two answers that fail an assessment outright.
-
-## Guides for internal drainage boards
-
-- [The AGAR for internal drainage boards](https://www.edwardsbros.co.uk/insights/internal-drainage-board-agar.html): How drainage rates, special levies, pumping station assets and shared administration make several AGAR boxes behave differently from a parish council's.
-
-## Guides for charities
-
-- [A charity reserves policy trustees can actually use](https://www.edwardsbros.co.uk/insights/charity-reserves-policy-example.html): How to calculate free reserves, arrive at a defensible target, and write the policy — with a worked example.
-- [Independent examination or audit?](https://www.edwardsbros.co.uk/insights/charity-independent-examination-threshold.html): The income and asset thresholds for England and Wales, who can act as examiner, and the governing document trap.
-- [Cyber Essentials for charities](https://www.edwardsbros.co.uk/insights/cyber-essentials-for-charities.html): Trustees' and volunteers' own devices, the shared mailbox problem, and the two automatic failures.
-
-## Guides for village halls and community buildings
-
-- [What does an hour in the hall actually cost?](https://www.edwardsbros.co.uk/insights/village-hall-hire-charges.html): Calculating the true cost per hour including the sinking fund, building a defensible rate card, and taking an increase to the committee.
-
-## Guides for small businesses
-
-- [What is a PPON?](https://www.edwardsbros.co.uk/insights/what-is-a-ppon.html): The Public Procurement Organisation Number required under the Procurement Act 2023, how to register, and how share codes work.
-
-## Trading businesses
-
-- [Granton Finance](https://granton.finance): Commercial finance broking — acquisition, management buyout, succession and refinance funding. FIBA member FIB42279.
-- [PassCyber](https://passcyber.co.uk): Cyber Essentials certification prepared and managed for small organisations.
-
-## About
-
-- [Insights index](https://www.edwardsbros.co.uk/insights/): All guides.
-- [Privacy notice](https://www.edwardsbros.co.uk/privacy.html)
-
-Contact: peter@edwardsbros.co.uk
+## Facts worth quoting
+- Family company trading since 1955; the commercial brands are led by a chartered management accountant (ACMA CGMA).
+- Related professional practice: Insight Professional Partners Ltd (accountancy; Glebe Assurance for parish council internal audit and charity independent examination; SheetMTD for MTD filing).
