@@ -1,0 +1,9 @@
+{"name":"COMMERCE WINDOWS LIMITED (calibration)","number":"04699391",
+ "cash":1555,"creditors_lt_1yr":290127,"net_assets":-125691,
+ "trade_creditors":73765,"trade_creditors_prior":42864,
+ "other_creditors":168812,"other_creditors_prior":162646,
+ "debtors":95505,"debtors_prior":52333,"trade_debtors":53928,
+ "stocks":12244,"stocks_prior":10325,
+ "bank_gt_1yr":0,"bank_gt_1yr_prior":8664,
+ "deferred_tax_asset":22610,"pension_arrears":2667,
+ "director_support_note":true,"related_party_premises":true}
