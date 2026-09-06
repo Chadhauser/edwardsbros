@@ -6,7 +6,6 @@ jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
       - name: Submit URLs to IndexNow
         run: |
           python3 - << 'EOF'
@@ -14,9 +13,10 @@ jobs:
           HOST = "edwardsbros.co.uk"
           KEY = "25799e6ca1949608bc5ba8492f3b214c"
           try:
-              urls = re.findall(r"<loc>(.*?)</loc>", open("sitemap.xml").read())
+              sm = urllib.request.urlopen(f"https://www.{HOST}/sitemap.xml", timeout=30).read().decode()
+              urls = re.findall(r"<loc>(.*?)</loc>", sm)
           except Exception:
-              urls = [f"https://{HOST}/"]
+              urls = [f"https://www.{HOST}/"]
           body = json.dumps({"host": HOST, "key": KEY,
                              "keyLocation": f"https://{HOST}/{KEY}.txt",
                              "urlList": urls[:100]}).encode()
