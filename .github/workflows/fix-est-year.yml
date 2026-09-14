@@ -1,0 +1,46 @@
+name: Fix Est. 1955 → 1958
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/fix-est-year.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Replace 1955 with 1958 everywhere
+        run: |
+          echo "Files containing 1955 before:"
+          grep -rl "1955" . --include="*.html" --include="*.txt" --include="*.xml" --include="*.json" --include="*.md" || true
+          grep -rl "1955" . --include="*.html" --include="*.txt" --include="*.xml" --include="*.json" --include="*.md" \
+            | xargs -r sed -i 's/1955/1958/g'
+          echo "Files containing 1955 after:"
+          grep -rl "1955" . --include="*.html" --include="*.txt" --include="*.xml" --include="*.json" --include="*.md" || echo "none — clean"
+
+      - name: Remove this workflow
+        run: rm -f .github/workflows/fix-est-year.yml
+
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Nothing to commit"
+          else
+            git commit -m "Correct founding year: Est. 1955 -> Est. 1958 across insights pages
+
+          Edwards Bros (Spaldwick) Ltd was founded in 1958, not 1955. The wrong
+          year survived on the logo strapline of 14 insights pages after the
+          earlier fixes to the index, Granton and calculator pages.
+
+          This workflow removes itself in the same commit."
+            git push
+          fi
