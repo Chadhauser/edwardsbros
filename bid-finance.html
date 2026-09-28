@@ -76,6 +76,13 @@
 .cform .hint2{font-weight:400;color:#7a867f;font-size:12px}
 .cform input,.cform textarea{font:inherit;font-size:15px;padding:9px 11px;border:1px solid var(--line);border-radius:3px;background:#fff;color:var(--ink)}
 .cform input:focus,.cform textarea:focus{outline:2px solid var(--g);outline-offset:1px}
+.fs-gate{margin:16px 0 0;padding:16px 18px;border:1px solid var(--g);border-radius:4px;background:#e7f1ec}
+.fs-gate p{margin:0 0 12px;font-size:14px;color:var(--ink)}
+.fs-gate .frow{display:flex;gap:16px;margin-bottom:6px}
+@media(max-width:560px){.fs-gate .frow{flex-direction:column;gap:0}}
+.fs-gate label{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:12px;flex:1}
+.fs-gate input{font:inherit;font-size:15px;padding:9px 11px;border:1px solid var(--line);border-radius:3px;background:#fff;color:var(--ink)}
+.fs-gate input:focus{outline:2px solid var(--g);outline-offset:1px}
 </style>
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"Service","name":"Financial sections of public-sector bids","provider":{"@id":"https://www.edwardsbros.co.uk/#org"},"areaServed":"GB","description":"Preparing and reviewing the financial-standing responses, ratios and pricing schedules of public-sector tender submissions.","offers":{"@type":"Offer","priceCurrency":"GBP","price":"1500","description":"Fixed fee, £1,500-£2,500 by contract size"}}
@@ -109,7 +116,7 @@
     <div class="fs-tool">
       <div class="fs-tool__head">
         <strong>Free financial-standing check</strong>
-        <p>Enter your last accounts and the contract size. Nothing is stored or sent — the check runs in your browser.</p>
+        <p>Enter your last accounts and the contract size. Nothing is stored or sent until you choose to see the full breakdown.</p>
       </div>
       <div class="fs-grid">
         <div class="fs-fld"><label for="annual">Annual value of the contract (£)<span class="hint">one year, not the whole term</span></label><input id="annual" type="number" inputmode="numeric" placeholder="300000"></div>
@@ -248,6 +255,30 @@ function assess(fin, contract, thresholds){
 // === UI ===
 function num(id){ var v=document.getElementById(id).value.trim(); return v===""?null:Number(v); }
 function esc(s){ return String(s).replace(/[&<>]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;"}[c];}); }
+var LAST=null;
+function renderFull(){
+  var r=LAST.r, html="";
+  r.checks.forEach(function(c){
+    html+='<div class="fs-row"><span class="fs-dot '+c[1]+'"></span><span class="nm">'+esc(c[0])+'</span><span class="st '+c[1]+'">'+esc(c[1])+'</span><span class="dt">'+esc(c[2])+'</span></div>';
+  });
+  html+='<div class="fs-na"><h4>This quick check does not look at:</h4><ul>';
+  r.not_assessed.forEach(function(x){ html+='<li>'+esc(x)+'</li>'; });
+  html+='</ul></div>';
+  html+='<div class="fs-cta"><p>Want the gaps fixed and the financial sections written properly? Send me the live tender and your accounts for a free, no-obligation review of where you really stand.</p><a class="fs-btn" href="#contact">Get in touch</a></div>';
+  document.getElementById("fsdetail").innerHTML=html;
+}
+function doUnlock(){
+  var name=document.getElementById("g_name").value.trim();
+  var email=document.getElementById("g_email").value.trim();
+  var gmsg=document.getElementById("gmsg");
+  if(!name || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ gmsg.style.color="var(--red)"; gmsg.textContent="Please add your name and a valid email."; return; }
+  var btn=document.getElementById("unlock"); btn.disabled=true; btn.textContent="Unlocking…";
+  var payload={name:name, email:email, company:document.getElementById("g_company").value.trim(), website:document.getElementById("g_hp").value, verdict:LAST.r.verdict, figures:LAST.figures};
+  var done=function(){ var gate=document.getElementById("fsgate"); if(gate) gate.style.display="none"; renderFull(); };
+  try{
+    fetch("https://xeadalusejspxhqesisv.supabase.co/functions/v1/capture-lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)}).then(done,done);
+  }catch(e){ done(); }
+}
 document.getElementById("run").addEventListener("click", function(){
   var msg=document.getElementById("msg"); msg.textContent="";
   var reqd={annual:"the contract value", turnover:"your turnover", ca:"current assets", cl:"current liabilities", debt:"borrowings", equity:"net assets", pbt:"profit before tax"};
@@ -257,19 +288,21 @@ document.getElementById("run").addEventListener("click", function(){
   var fin={turnover:vals.turnover,current_assets:vals.ca,current_liabilities:vals.cl,total_debt:vals.debt,equity:vals.equity,profit_before_tax:vals.pbt};
   var contract={annual_value:vals.annual, required_min_turnover:num("reqmin")};
   var r=assess(fin,contract);
+  LAST={r:r, figures:{annual_value:vals.annual, required_min_turnover:num("reqmin"), turnover:vals.turnover, current_assets:vals.ca, current_liabilities:vals.cl, total_debt:vals.debt, equity:vals.equity, profit_before_tax:vals.pbt}};
   var cls = r.verdict==="LIKELY PASS"?"pass":(r.verdict==="AT RISK"?"risk":"fail");
   var lead = r.verdict==="LIKELY PASS"?"On these figures you would likely clear the financial-standing test.":
              r.verdict==="AT RISK"?"On these figures you are at risk — one or more measures would give an evaluator pause.":
              "On these figures you would likely be screened out on financial standing.";
   var html='<div class="fs-verdict '+cls+'"><span class="big">'+esc(r.verdict.replace("LIKELY ",""))+'</span><span>'+esc(lead)+'</span></div>';
-  r.checks.forEach(function(c){
-    html+='<div class="fs-row"><span class="fs-dot '+c[1]+'"></span><span class="nm">'+esc(c[0])+'</span><span class="st '+c[1]+'">'+esc(c[1])+'</span><span class="dt">'+esc(c[2])+'</span></div>';
-  });
-  html+='<div class="fs-na"><h4>This quick check does not look at:</h4><ul>';
-  r.not_assessed.forEach(function(x){ html+='<li>'+esc(x)+'</li>'; });
-  html+='</ul></div>';
-  html+='<div class="fs-cta"><p>Want the gaps fixed and the financial sections written properly? Send me the live tender and your accounts for a free, no-obligation review of where you really stand.</p><a class="fs-btn" href="#contact">Get in touch</a></div>';
+  html+='<div class="fs-gate" id="fsgate">'
+      +'<p>Enter your details to see the full breakdown — which of the five tests you pass, which you fail, and why.</p>'
+      +'<div class="frow"><label>Name<input id="g_name" autocomplete="name"></label><label>Email<input id="g_email" type="email" autocomplete="email"></label></div>'
+      +'<div class="frow"><label>Company (optional)<input id="g_company" autocomplete="organization"></label></div>'
+      +'<input id="g_hp" style="position:absolute;left:-9999px" tabindex="-1" autocomplete="off" aria-hidden="true">'
+      +'<button class="fs-btn" id="unlock">See the full breakdown</button> <span class="fs-msg" id="gmsg"></span>'
+      +'</div><div id="fsdetail"></div>';
   var box=document.getElementById("result"); box.innerHTML=html; box.classList.add("show");
+  document.getElementById("unlock").addEventListener("click", doUnlock);
   box.scrollIntoView({behavior:"smooth",block:"nearest"});
 });
 document.getElementById("cform").addEventListener("submit", function(e){
