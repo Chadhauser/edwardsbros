@@ -48,6 +48,8 @@ function tidy(t) {
   return String(t || '')
     .replace(/\s*[-–\/]?\s*\d{1,3}\s*[- ]?\s*(?:pack|pk|cans?|bottles?|count|ct)\b/ig, '')
     .replace(/\s*[-–\/]?\s*case of\s*\d{1,3}/ig, '')
+    .replace(/\s*[-–\/]?\s*\d{1,3}\s*[x×]\s*\d+(?:\.\d+)?\s*(?:ml|cl|ltr|l|g|kg|oz)\b/ig, '')
+    .replace(/\s*[•|].*$/, '')
     .replace(/\s*\/\s*\d{1,3}\s*$/, '').replace(/^\d{1,3}$/, '')
     .replace(/\s*[-–\/]\s*$/, '').trim();
 }
@@ -69,8 +71,8 @@ function check(products) {
   for (const r of ship) {
     // A bare number ("24", "Red / 12") only counts as a pack size when the product
     // is clearly sold in packs; otherwise it is usually a clothing or shoe size.
-    const sizeOption = (r.p.options || []).some(o => /size|taille|fit/i.test(o && o.name || ''));
-    const packish = !sizeOption && /\b(packs?|multipack|case|cans|crate)\b/i.test(`${r.p.title} ${r.p.product_type || ''}`);
+    // An option called "Size" is usually clothing, unless the product itself says it is sold in packs.
+    const packish = /\b(packs?|multipack|case|cans|crate)\b/i.test(`${r.p.title} ${r.p.product_type || ''}`);
     const size = packSize(r.v.title, packish) || packSize(r.p.title, packish);
     const g = Number(r.v.grams);
     if (!size || !g) continue;

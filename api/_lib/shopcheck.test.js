@@ -138,7 +138,7 @@ test('19. Colour names like "Bottle Green" do not make clothing look like packs'
   assert.equal(r.checks.packSameWeight.count, 0);
 });
 test('20. A product with a Size option is never treated as packs', () => {
-  const r = check([p('Party Pack Dress', 'pd', [v('Red / 12', 'a', 400), v('Red / 14', 'b', 400)], { options: [{ name: 'Colour' }, { name: 'Size' }] })]);
+  const r = check([p('Tilly Midi Dress', 'pd', [v('Red / 12', 'a', 400), v('Red / 14', 'b', 400)], { options: [{ name: 'Colour' }, { name: 'Size' }] })]);
   assert.equal(r.checks.packSameWeight.count, 0);
 });
 test('21. Display names are tidy', () => {
@@ -157,4 +157,13 @@ test('22. Measurements in cm are not pack sizes; "24 x 330ml" still is', () => {
   assert.equal(packSize('24 x 330ml cans'), 24);
   assert.equal(packSize('12 x 250ml'), 12);
   assert.equal(packSize('160 x 230cm'), null);
+});
+
+test('23. Pack sizes held in an option called "Size" are caught when the product is a pack (Moth)', () => {
+  const r = check([p('Twilight Pack', 'tp', [v('8', 'a', 1524), v('12', 'b', 1524), v('24', 'c', 1524)], { options: [{ name: 'Size' }] })]);
+  assert.equal(r.checks.packSameWeight.count, 1);
+});
+test('24. Long variant names are tidied ("10 × 440ml • £3.30 Per Can")', () => {
+  const r = check([p('IMPOSSIBREW® Cask Reserve Amber', 'cra', [v('10 × 440ml • £3.30 Per Can', 'a', 5000), v('20 x 440ml • £2.95 Per Can', 'b', 5000)])]);
+  assert.equal(r.checks.packSameWeight.examples[0].name, 'IMPOSSIBREW® Cask Reserve Amber');
 });
