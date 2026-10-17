@@ -158,3 +158,25 @@ footer a:hover{text-decoration:underline}
   .hero{padding:6.5rem 0 5.5rem}
 }
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---- shop checker ---- */
+.checker{max-width:40rem}
+.checker label{display:block;margin-bottom:.6rem;color:var(--ground)}
+.checker__row{display:flex;gap:.6rem;flex-wrap:wrap}
+.checker input{flex:1 1 16rem;min-width:0;font:inherit;padding:.8rem 1rem;border:1px solid var(--line);border-bottom:2px solid var(--ground);background:var(--paper);color:var(--ink)}
+.checker input:focus{outline:2px solid var(--gold);outline-offset:1px}
+.checker button{font-family:"IBM Plex Mono",monospace;font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;font-weight:500;padding:.85rem 1.4rem;border:0;background:var(--ground);color:var(--on-dark);cursor:pointer}
+.checker button:hover{background:var(--ground-2)}
+.checker button:disabled{opacity:.6;cursor:wait}
+.checker__out{max-width:44rem;margin-top:2rem}
+.checker__sum{font-size:1.0625rem;margin:0 0 1.25rem}
+.checker__msg{color:var(--ink-soft);margin:0 0 1rem}
+.checker__list{border-top:2px solid var(--gold)}
+.checker__item{padding:1.1rem 0;border-bottom:1px solid var(--line)}
+.checker__item h3{font-family:"Newsreader",Georgia,serif;font-weight:600;font-size:1.1875rem;margin:0 0 .35rem}
+.checker__n{color:var(--ground);font-variant-numeric:tabular-nums}
+.checker__item p{margin:0 0 .5rem;color:var(--ink-soft);font-size:.9375rem}
+.checker__item ul{margin:0;padding-left:1.1rem;font-size:.9375rem;overflow-wrap:anywhere}
+.checker__item li{margin-bottom:.25rem}
+.checker__item li::marker{color:var(--gold)}
+.checker__out .cta{margin-top:2rem}

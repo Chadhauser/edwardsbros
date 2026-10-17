@@ -55,6 +55,7 @@
     <h1>Send us the mess. <em>We'll send back the numbers.</em></h1>
     <p class="hero__lede">Changing your accounting system, your CRM or your ERP? Trying to get a product range listed with a retailer? The software is the easy part. The data is what delays it. We fix that for a fixed price — and we prove it, with a before-and-after count of every record.</p>
     <div class="hero__facts">
+      <a class="mono" href="#check" style="color:var(--gold)">Free instant shop check</a>
       <span class="mono">Free readiness check</span>
       <span class="mono">Fixed price, never hourly</span>
       <span class="mono">Clean-up in about a week</span>
@@ -63,6 +64,24 @@
 </header>
 
 <main id="main">
+
+<section class="section" id="check">
+  <div class="wrap">
+    <div class="section__head">
+      <span class="mono">Free instant check</span>
+      <h2>Check your Shopify shop in ten seconds</h2>
+      <p>Type your shop's web address. We read the product list every Shopify shop publishes and show you the weights, pack sizes and product codes that look wrong. Nothing to sign up for, and nothing is stored.</p>
+    </div>
+    <form class="checker" id="checker" novalidate>
+      <label for="shop" class="mono">Your shop's web address</label>
+      <div class="checker__row">
+        <input id="shop" name="shop" type="text" inputmode="url" autocomplete="url" spellcheck="false" placeholder="yourshop.co.uk" required>
+        <button type="submit">Check my shop</button>
+      </div>
+    </form>
+    <div class="checker__out" id="checker-out" aria-live="polite"></div>
+  </div>
+</section>
 
 <section class="section">
   <div class="wrap">
@@ -239,5 +258,89 @@
     <span class="mono"><a href="/privacy.html">Privacy notice</a></span>
   </div>
 </footer>
+<script>
+(function () {
+  var form = document.getElementById('checker');
+  var input = document.getElementById('shop');
+  var out = document.getElementById('checker-out');
+  var btn = form.querySelector('button');
+  var LABELS = {
+    zeroWeight: ['items that ship but have no weight', 'Checkout postage and courier labels work from this figure, so these orders can be charged or booked at the wrong rate.', 'item that ships but has no weight'],
+    packSameWeight: ['products whose pack sizes all show the same weight', 'A bigger pack showing the same weight as a smaller one usually means a figure was copied across.', 'product whose pack sizes all show the same weight'],
+    missingSku: ['items that ship with no product code', 'Without a code, stock for these items is hard to track, and retailers and marketplaces will ask for one.', 'item that ships with no product code'],
+    sharedSku: ['product codes used on more than one listing', 'Sometimes deliberate, but if the listings hold stock separately the counts drift.', 'product code used on more than one listing'],
+    duplicateTitles: ['products with the same name on separate listings', 'Often a leftover copy, which splits reviews, stock and sales reports.', 'product with the same name on separate listings']
+  };
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  function fmt(n) { return Number(n).toLocaleString('en-GB'); }
+  function example(key, ex) {
+    if (key === 'packSameWeight') return ex.name + ': ' + ex.sizes.join(', ') + ' all at ' + fmt(ex.grams) + 'g';
+    if (key === 'sharedSku') return ex.sku + ': ' + ex.items.slice(0, 3).join('; ') + (ex.items.length > 3 ? '…' : '');
+    if (key === 'duplicateTitles') return ex.title + ' (' + ex.listings + ' listings)';
+    return ex;
+  }
+  function cta(host, foundAny) {
+    var box = el('div', 'cta');
+    box.appendChild(el('span', 'mono', 'The full check, free'));
+    box.appendChild(el('h2', null, foundAny ? 'That is only what shows from the outside' : 'Nothing obvious from the outside'));
+    box.appendChild(el('p', null, 'Barcodes, case sizes, duplicates and allergen fields need your product export. Send it over and we will check every line free, with a one-page summary back within five working days.'));
+    var p = el('p');
+    var a = el('a', null, 'Email your export to peter@edwardsbros.co.uk');
+    a.href = 'mailto:peter@edwardsbros.co.uk?subject=' + encodeURIComponent('Free full check: ' + host);
+    p.appendChild(a);
+    box.appendChild(p);
+    return box;
+  }
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var shop = input.value.trim();
+    if (!shop) { input.focus(); return; }
+    out.textContent = '';
+    out.appendChild(el('p', 'mono', 'Checking ' + shop + '…'));
+    btn.disabled = true;
+    fetch('/api/shop-check?shop=' + encodeURIComponent(shop))
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        out.textContent = '';
+        if (!d.ok) {
+          out.appendChild(el('p', 'checker__msg', d.message || 'Something went wrong. Please try again.'));
+          if (d.host) out.appendChild(cta(d.host, false));
+          return;
+        }
+        var found = 0;
+        Object.keys(LABELS).forEach(function (k) { if (d.checks[k].count) found++; });
+        out.appendChild(el('p', 'checker__sum', 'We checked ' + fmt(d.products) + ' products (' + fmt(d.variants) + ' options) on ' + d.host + (d.truncated ? ', the first 1,000 products only' : '') + '.'));
+        var list = el('div', 'checker__list');
+        Object.keys(LABELS).forEach(function (k) {
+          var c = d.checks[k];
+          if (!c.count) return;
+          var item = el('div', 'checker__item');
+          var h = el('h3');
+          h.appendChild(el('span', 'checker__n', fmt(c.count)));
+          h.appendChild(document.createTextNode(' ' + (c.count === 1 ? LABELS[k][2] : LABELS[k][0])));
+          item.appendChild(h);
+          item.appendChild(el('p', null, LABELS[k][1]));
+          var ul = el('ul');
+          c.examples.forEach(function (ex) { ul.appendChild(el('li', null, example(k, ex))); });
+          if (c.count > c.examples.length) ul.appendChild(el('li', 'mono', 'and ' + fmt(c.count - c.examples.length) + ' more'));
+          item.appendChild(ul);
+          list.appendChild(item);
+        });
+        if (found) out.appendChild(list);
+        out.appendChild(cta(d.host, found > 0));
+      })
+      .catch(function () {
+        out.textContent = '';
+        out.appendChild(el('p', 'checker__msg', 'The check could not be completed just now. Please try again in a minute.'));
+      })
+      .then(function () { btn.disabled = false; });
+  });
+})();
+</script>
 </body>
 </html>
