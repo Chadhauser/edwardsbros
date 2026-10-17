@@ -132,3 +132,20 @@ test('18. A bare number still counts when the product is sold in packs', () => {
   const r = check([p('Twilight Pack', 'tp', [v('8', 'a', 1524), v('24', 'b', 1524)])]);
   assert.equal(r.checks.packSameWeight.count, 1);
 });
+
+test('19. Colour names like "Bottle Green" do not make clothing look like packs', () => {
+  const r = check([p('Bottle Green Studded Vegan Leather Trousers', 'tr', [6, 8, 10, 12].map(n => v(String(n), 'T' + n, 600)))]);
+  assert.equal(r.checks.packSameWeight.count, 0);
+});
+test('20. A product with a Size option is never treated as packs', () => {
+  const r = check([p('Party Pack Dress', 'pd', [v('Red / 12', 'a', 400), v('Red / 14', 'b', 400)], { options: [{ name: 'Colour' }, { name: 'Size' }] })]);
+  assert.equal(r.checks.packSameWeight.count, 0);
+});
+test('21. Display names are tidy', () => {
+  const r1 = check(separate).checks.packSameWeight.examples[0].name;
+  assert.equal(r1, 'Raspberry Lemonade');
+  const r2 = check([p('Feisty Protein Soda', 'f', [v('Mixed / 6-pack', 'a', 4500), v('Mixed / 12-pack', 'b', 4500)])]).checks.packSameWeight.examples[0].name;
+  assert.equal(r2, 'Feisty Protein Soda – Mixed');
+  const r3 = check(moth).checks.packSameWeight.examples[0].name;
+  assert.equal(r3, 'Twilight Pack');
+});

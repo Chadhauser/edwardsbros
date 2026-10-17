@@ -43,6 +43,15 @@ function stripPack(text) {
     .replace(/[^a-z]+/g, ' ').trim();
 }
 
+// Remove pack-size wording from a name for display: "RASPBERRY LEMONADE - 12 PACK" -> "RASPBERRY LEMONADE"
+function tidy(t) {
+  return String(t || '')
+    .replace(/\s*[-–\/]?\s*\d{1,3}\s*[- ]?\s*(?:pack|pk|cans?|bottles?|count|ct)\b/ig, '')
+    .replace(/\s*[-–\/]?\s*case of\s*\d{1,3}/ig, '')
+    .replace(/\s*\/\s*\d{1,3}\s*$/, '').replace(/^\d{1,3}$/, '')
+    .replace(/\s*[-–\/]\s*$/, '').trim();
+}
+
 function normTitle(t) { return String(t || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(); }
 
 function check(products) {
@@ -60,7 +69,8 @@ function check(products) {
   for (const r of ship) {
     // A bare number ("24", "Red / 12") only counts as a pack size when the product
     // is clearly sold in packs; otherwise it is usually a clothing or shoe size.
-    const packish = /pack|case|cans?\b|bottles?|box|multi|bundle|crate|tray|sachets?/i.test(`${r.p.title} ${r.p.product_type || ''}`);
+    const sizeOption = (r.p.options || []).some(o => /size|taille|fit/i.test(o && o.name || ''));
+    const packish = !sizeOption && /\b(packs?|multipack|case|cans|crate)\b/i.test(`${r.p.title} ${r.p.product_type || ''}`);
     const size = packSize(r.v.title, packish) || packSize(r.p.title, packish);
     const g = Number(r.v.grams);
     if (!size || !g) continue;
@@ -88,8 +98,10 @@ function check(products) {
     const sig = core + '|' + uniq.map(i => i.size).join(',') + '|' + uniq[0].g;
     if (seenFam.has(sig)) continue;
     seenFam.add(sig);
+    const cleanP = tidy(first.p.title), cleanV = tidy(first.v.title === 'Default Title' ? '' : first.v.title);
+    const pName = cleanP && cleanV && cleanV.toLowerCase().includes(cleanP.toLowerCase()) ? '' : cleanP;
     packSame.push({
-      name: uniq[0].r.p.title + (stripPack(uniq[0].r.v.title) ? ` – ${uniq[0].r.v.title.replace(/\s*\/?\s*\d{1,3}\s*$/, '').trim()}` : ''),
+      name: [pName, cleanV].filter(Boolean).filter((x, i, a) => i === 0 || x.toLowerCase() !== a[0].toLowerCase()).join(' – ') || first.p.title,
       sizes: uniq.map(i => i.size),
       grams: uniq[0].g,
     });
