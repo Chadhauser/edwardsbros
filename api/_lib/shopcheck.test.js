@@ -149,3 +149,12 @@ test('21. Display names are tidy', () => {
   const r3 = check(moth).checks.packSameWeight.examples[0].name;
   assert.equal(r3, 'Twilight Pack');
 });
+
+test('22. Measurements in cm are not pack sizes; "24 x 330ml" still is', () => {
+  const r = check([p('Satara Oval Jute Basket', 'b', [v('18x25cm', 'a', 18500), v('22x30cm', 'b', 18500)]),
+                   p('Outlet - Hemsby 160 x 230cm Garden Rug', 'r', [v('160 x 230cm', 'c', 15000), v('200 x 290cm', 'd', 15000)])]);
+  assert.equal(r.checks.packSameWeight.count, 0);
+  assert.equal(packSize('24 x 330ml cans'), 24);
+  assert.equal(packSize('12 x 250ml'), 12);
+  assert.equal(packSize('160 x 230cm'), null);
+});

@@ -27,7 +27,7 @@ function packSize(text, allowBare) {
   const s = String(text || '').toLowerCase();
   let m = s.match(/(\d{1,3})\s*[- ]?\s*(?:pack|pk|cans?|bottles?|count|ct)\b/) ||
     s.match(/case of\s*(\d{1,3})/) ||
-    s.match(/(\d{1,3})\s*[x×]\s*\d/) ||
+    s.match(/(\d{1,3})\s*[x×]\s*\d+(?:\.\d+)?\s*(?:ml|cl|ltr|l|g|kg|oz)\b/) ||
     (allowBare === false ? null : s.match(/(?:^|\/\s*)(\d{1,3})\s*$/));
   if (!m) return null;
   const n = Number(m[1]);
@@ -38,7 +38,7 @@ function stripPack(text) {
   return String(text || '').toLowerCase()
     .replace(/(\d{1,3})\s*[- ]?\s*(?:pack|pk|cans?|bottles?|count|ct)\b/g, '')
     .replace(/case of\s*\d{1,3}/g, '')
-    .replace(/\d{1,3}\s*[x×]\s*\d+\s*\w*/g, '')
+    .replace(/\d{1,3}\s*[x×]\s*\d+(?:\.\d+)?\s*(?:ml|cl|ltr|l|g|kg|oz)\b/g, '')
     .replace(/(?:^|\/\s*)\d{1,3}\s*$/g, '')
     .replace(/[^a-z]+/g, ' ').trim();
 }
