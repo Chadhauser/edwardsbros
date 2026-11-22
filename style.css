@@ -82,7 +82,7 @@ body{
 main .section:nth-of-type(even){background:var(--tint)}
 .section__head{margin-bottom:2.6rem;max-width:var(--measure)}
 .section__head .mono{color:var(--gold-ink)}
-.section__head h2{font-family:"Newsreader",Georgia,serif;font-weight:600;font-size:clamp(1.6rem,3vw,2.1rem);letter-spacing:-.012em;margin:.7rem 0 0}
+.section__head h1,.section__head h2{font-family:"Newsreader",Georgia,serif;font-weight:600;font-size:clamp(1.6rem,3vw,2.1rem);letter-spacing:-.012em;margin:.7rem 0 0}
 .section__head p{margin:1rem 0 0;color:var(--ink-soft)}
 
 /* ---- divisions ---- */
